@@ -1,0 +1,59 @@
+---
+bck_service: &bck_service
+  stack: cflinuxfs3
+  memory: 1G
+  buildpacks:
+    - java_buildpack_offline
+  health-check-type: port
+  # random-route: true
+  no-route: true
+  env:
+    SSO_IDENTITY_PROVIDERS: uaa, jumpcloud
+    SPRING_PROFILES_ACTIVE: cloud
+    SPRING_RABBITMQ_ADDRESSES: ${vcap.services.event-bus.credentials.uri}
+    GRANT_TYPE: client_credentials
+    SSO_AUTHORITIES: openid,uaa.resource,menu.read,menu.write,order.admin,order.me,admin.read,admin.write
+  services:
+  - sso
+  - service-registry
+  - config-server
+  - event-bus
+  - bckservice-db
+
+fd_service: &fd_service
+  stack: cflinuxfs3
+  memory: 1G
+  buildpacks:
+    - java_buildpack_offline
+  random-route: true
+  env:
+    SSO_IDENTITY_PROVIDERS: uaa, jumpcloud
+    SPRING_PROFILES_ACTIVE: cloud
+    SPRING_RABBITMQ_ADDRESSES: ${vcap.services.event-bus.credentials.uri}
+    GRANT_TYPE: authorization_code
+    SSO_SCOPES: openid,user_attributes,roles,uaa.resource,menu.read,menu.write,order.admin,order.me,admin.read,admin.write
+    SSO_AUTO_APPROVED_SCOPES: openid,user_attributes,roles,menu.read,menu.write,order.me,order.admin,admin.read,admin.write
+    SSO_SHOW_ON_HOME_PAGE: true
+  services:
+  - sso
+  - service-registry
+  - config-server
+  - event-bus
+  - circuit-breaker
+
+applications:
+  - name: menu-service-bbq
+    path: microsec-menu-service/target/microsec-menu-service.jar
+    <<: *bck_service
+
+  - name: order-service-bbq
+    path: microsec-order-service/target/microsec-order-service.jar
+    <<: *bck_service
+
+  - name: customer-portal-bbq
+    path: microsec-customer-portal/target/microsec-customer-portal.jar
+    <<: *fd_service
+
+  - name: admin-portal-bbq
+    path: microsec-admin-portal/target/microsec-admin-portal.jar
+    <<: *fd_service
