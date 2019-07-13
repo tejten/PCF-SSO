@@ -1,0 +1,10 @@
+.idea/**
+/microsec-order-service/target/**
+/microsec-admin-portal/target/**
+/microsec-menu-service/target/**
+/microsec-customer-portal/target/**
+/microsec-common/target/**
+/microsec-test/target/**
+/microsec-custom-registry/target/**
+/microsec-hystrix-dashboard/target/**
+/microsec-eureka-server/target/**
